@@ -2,8 +2,8 @@ import bcrypt from "bcryptjs";
 
 export async function saltAndHashPassword(password: string): Promise<string> {
   const saltRounds = 10;
-  const salt = bcrypt.genSaltSync(saltRounds);
-  const hash = bcrypt.hashSync(password, salt);
+  const salt = await bcrypt.genSaltSync(saltRounds);
+  const hash = await bcrypt.hashSync(password, salt);
 
   return hash;
 }
