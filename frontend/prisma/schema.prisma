@@ -9,24 +9,22 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
-  type               String
-  provider           String
-  providerAccountId  String  @map("provider_account_id")
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -37,29 +35,27 @@ model Session {
   sessionToken String   @unique @map("session_token")
   userId       String   @map("user_id")
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
 model User {
-  id             String    @id @default(cuid())
-  name           String?
-  email          String?   @unique
-  emailVerified  DateTime? @map("email_verified")
-  hashedPassword String?   @map("hashed_password")
-  image          String?
-  bio            String?
-
-  accounts Account[]
-  sessions Session[]
-  courses  Course[]
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  emailVerified     DateTime?          @map("email_verified")
+  hashedPassword    String?            @map("hashed_password")
+  image             String?
+  bio               String?
+  accounts          Account[]
+  courseComments    CourseComment[]
   courseEnrollments CourseEnrollment[]
-  courseReviews     CourseReview[]
   courseQuestions   CourseQuestion[]
-  courseComments CourseComment[]
+  courseReviews     CourseReview[]
+  courses           Course[]
   lectureActivities LectureActivity[]
+  sessions          Session[]
 
   @@map("users")
 }
@@ -74,79 +70,77 @@ model VerificationToken {
 }
 
 model Course {
-  id String @id @default(uuid())
-  slug String @unique
-  title String
-  shortDescription String? @map("short_description")
-  description String? @map("description")
-  thumbnailUrl String? @map("thumbnail_url")
-  price Int @default(0)
-  discountPrice Int? @map("discount_price")
-  level String @default("BEGINNER")
-  instructorId String @map("instructor_id")
-  isPublished Boolean @default(false) @map("is_published")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                     String                   @id @default(uuid())
+  slug                   String                   @unique
+  title                  String
+  shortDescription       String?                  @map("short_description")
+  description            String?                  @map("description")
+  thumbnailUrl           String?                  @map("thumbnail_url")
+  price                  Int                      @default(0)
+  discountPrice          Int?                     @map("discount_price")
+  level                  String                   @default("BEGINNER")
+  status                 String                   @default("DRAFT")
+  instructorId           String                   @map("instructor_id")
+  isPublished            Boolean                  @default(false) @map("is_published")
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  updatedAt              DateTime                 @updatedAt @map("updated_at")
+  
+  categories               CourseCategory[]
+  enrollments            CourseEnrollment[]
+  questions              CourseQuestion[]
+  reviews                CourseReview[]
+  instructor             User                     @relation(fields: [instructorId], references: [id])
+  lectures               Lecture[]
+  sections               Section[]
 
-  sections    Section[]
-  lectures Lecture[]
-  categories  CourseCategory[]
-  enrollments CourseEnrollment[]
-  reviews     CourseReview[]
-  questions   CourseQuestion[]
-
-  instructor  User @relation(fields: [instructorId], references: [id])
   @@map("courses")
 }
 
-model Section { 
-  id          String   @id @default(uuid())
+model Section {
+  id          String    @id @default(uuid())
   title       String
   description String?
   order       Int
-  courseId    String   @map("course_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lectures Lecture[]
+  courseId    String    @map("course_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  lectures    Lecture[]
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@map("sections")
 }
 
 model Lecture {
-  id               String   @id @default(uuid())
+  id               String            @id @default(uuid())
   title            String
   description      String?
   order            Int
   duration         Int?
-  isPreview        Boolean  @default(false) @map("is_preview")
-  sectionId        String   @map("section_id")
-  courseId         String   @map("course_id")
-  videoStorageInfo Json?    @map("video_storage_info")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  activities LectureActivity[]
-
-  section    Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  course     Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  isPreview        Boolean           @default(false) @map("is_preview")
+  sectionId        String            @map("section_id")
+  courseId         String            @map("course_id")
+  videoStorageInfo Json?             @map("video_storage_info")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  activities       LectureActivity[]
+  course           Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  section          Section           @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@map("lectures")
 }
 
 model CourseCategory {
-  id          String   @id @default(uuid())
-  name        String
-  slug        String   @unique
-  description String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                     String                   @id @default(uuid())
+  name                   String
+  slug                   String                   @unique
+  description            String?
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  updatedAt              DateTime                 @updatedAt @map("updated_at")
 
   courses Course[]
 
   @@map("course_categories")
-} 
+}
 
 model CourseEnrollment {
   id         String   @id @default(uuid())
@@ -155,9 +149,8 @@ model CourseEnrollment {
   enrolledAt DateTime @default(now()) @map("enrolled_at")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
-
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@map("course_enrollments")
@@ -172,41 +165,37 @@ model CourseReview {
   instructorReply String?  @map("instructor_reply")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
-
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@map("course_reviews")
 }
 
 model CourseQuestion {
-  id        String   @id @default(uuid())
+  id        String          @id @default(uuid())
   title     String
   content   String
-  userId    String   @map("user_id")
-  courseId  String   @map("course_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  comments CourseComment[]
-
-  course   Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String          @map("user_id")
+  courseId  String          @map("course_id")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  comments  CourseComment[]
+  course    Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("course_questions")
 }
 
 model CourseComment {
-  id         String   @id @default(uuid())
+  id         String         @id @default(uuid())
   content    String
-  userId     String   @map("user_id")
-  questionId String   @map("question_id")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  question CourseQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String         @map("user_id")
+  questionId String         @map("question_id")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+  question   CourseQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("course_comments")
 }
@@ -218,10 +207,10 @@ model LectureActivity {
   progress      Int      @default(0)
   isCompleted   Boolean  @default(false) @map("is_completed")
   lastWatchedAt DateTime @default(now()) @map("last_watched_at")
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lecture Lecture @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  lecture       Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lectureId])
   @@map("lecture_activities")
 }
+
