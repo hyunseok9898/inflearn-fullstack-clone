@@ -25,7 +25,7 @@ export default function SiteHeader({
         <div className="logo min-w-[120px]">
           <Link href="/">
             <Image
-              src="/img/inflearn_logo_default.svg"
+              src="/images/inflearn_public_logo.png"
               className="w-28 h-auto"
               width={120}
               height={32}
