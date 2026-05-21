@@ -76,7 +76,7 @@ export class CoursesService {
     }
 
     const { categoryIds, ...otherData } = updateCourseDto;
-    let data: Prisma.CourseUpdateInput = {
+    const data: Prisma.CourseUpdateInput = {
       ...otherData,
     };
 
