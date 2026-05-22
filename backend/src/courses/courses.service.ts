@@ -7,7 +7,7 @@ import { Course, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import slugfy from 'slug';
+import slugify from 'slugify';
 
 @Injectable()
 export class CoursesService {
@@ -20,7 +20,7 @@ export class CoursesService {
     return this.prisma.course.create({
       data: {
         title: createCourseDto.title,
-        slug: slugfy(createCourseDto.title),
+        slug: slugify(createCourseDto.title),
         instructorId: userId,
         status: 'DRAFT',
       },
@@ -45,18 +45,13 @@ export class CoursesService {
     });
   }
 
-  async findOne(id: string, include?: string[]): Promise<Course | null> {
-    const includeObject = {};
-
-    if (include) {
-      include.forEach((item) => {
-        includeObject[item] = true;
-      });
-    }
-
+  async findOne(
+    id: string,
+    include?: Prisma.CourseInclude,
+  ): Promise<Course | null> {
     const course = await this.prisma.course.findUnique({
       where: { id },
-      include: include && include?.length > 0 ? includeObject : undefined,
+      include,
     });
 
     return course;

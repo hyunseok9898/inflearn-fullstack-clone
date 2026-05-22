@@ -62,6 +62,9 @@ importers:
       slug:
         specifier: ^11.0.1
         version: 11.0.1
+      slugify:
+        specifier: ^1.6.9
+        version: 1.6.9
       uuid:
         specifier: ^14.0.0
         version: 14.0.0
@@ -3428,6 +3431,10 @@ packages:
   slug@11.0.1:
     resolution: {integrity: sha512-VrM060OM/E7rdLQSnp6JHrzFfJFmqQBp0+TMhZStnEB8PfNliaZ9UWYjTHGHLUFVJorZ8TjVd/aKvIxHWU2O7g==}
     hasBin: true
+
+  slugify@1.6.9:
+    resolution: {integrity: sha512-vZ7rfeehZui7wQs438JXBckYLkIIdfHOXsaVEUMyS5fHo1483l1bMdo0EDSWYclY0yZKFOipDy4KHuKs6ssvdg==}
+    engines: {node: '>=8.0.0'}
 
   snake-case@3.0.4:
     resolution: {integrity: sha512-LAOh4z89bGQvl9pFfNF8V146i7o7/CqFPbqzYgP+yYzDIDeS9HaNFtXABamRW+AQzEVODcvE79ljJ+8a9YSdMg==}
@@ -7508,6 +7515,8 @@ snapshots:
   slash@3.0.0: {}
 
   slug@11.0.1: {}
+
+  slugify@1.6.9: {}
 
   snake-case@3.0.4:
     dependencies:

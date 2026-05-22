@@ -48,7 +48,7 @@ export default function EditCourseInfoUI({ course }: { course: Course }) {
       api.updateCourse(course.id, {
         ...data,
         price: parseInt(data.price),
-        discountPrice: parseInt(data.price),
+        discountPrice: parseInt(data.discountPrice),
       }),
     onSuccess: () => {
       toast.success("강의 정보가 성공적으로 업데이트 되었습니다!");
