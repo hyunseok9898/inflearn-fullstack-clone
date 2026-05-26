@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd \"c:\\\\Users\\\\user\\\\OneDrive\\\\Desktop\\\\현석 개발\\\\inflearn-fullstack-clone\\\\backend\"; Get-NetTCPConnection | Where-Object {$_.LocalPort -eq 8000} 2>$null; netstat -ano | findstr \":8000\")"
+    ]
+  }
+}

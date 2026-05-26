@@ -9,6 +9,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -70,28 +71,27 @@ model VerificationToken {
 }
 
 model Course {
-  id                     String                   @id @default(uuid())
-  slug                   String                   @unique
-  title                  String
-  shortDescription       String?                  @map("short_description")
-  description            String?                  @map("description")
-  thumbnailUrl           String?                  @map("thumbnail_url")
-  price                  Int                      @default(0)
-  discountPrice          Int?                     @map("discount_price")
-  level                  String                   @default("BEGINNER")
-  status                 String                   @default("DRAFT")
-  instructorId           String                   @map("instructor_id")
-  isPublished            Boolean                  @default(false) @map("is_published")
-  createdAt              DateTime                 @default(now()) @map("created_at")
-  updatedAt              DateTime                 @updatedAt @map("updated_at")
-  
-  categories               CourseCategory[]
-  enrollments            CourseEnrollment[]
-  questions              CourseQuestion[]
-  reviews                CourseReview[]
-  instructor             User                     @relation(fields: [instructorId], references: [id])
-  lectures               Lecture[]
-  sections               Section[]
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  title            String
+  shortDescription String?  @map("short_description")
+  description      String?  @map("description")
+  thumbnailUrl     String?  @map("thumbnail_url")
+  price            Int      @default(0)
+  discountPrice    Int?     @map("discount_price")
+  level            String   @default("BEGINNER")
+  status           String   @default("DRAFT")
+  instructorId     String   @map("instructor_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  categories  CourseCategory[]
+  enrollments CourseEnrollment[]
+  questions   CourseQuestion[]
+  reviews     CourseReview[]
+  instructor  User               @relation(fields: [instructorId], references: [id])
+  lectures    Lecture[]
+  sections    Section[]
 
   @@map("courses")
 }
@@ -130,12 +130,12 @@ model Lecture {
 }
 
 model CourseCategory {
-  id                     String                   @id @default(uuid())
-  name                   String
-  slug                   String                   @unique
-  description            String?
-  createdAt              DateTime                 @default(now()) @map("created_at")
-  updatedAt              DateTime                 @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   courses Course[]
 
@@ -213,4 +213,3 @@ model LectureActivity {
   @@unique([userId, lectureId])
   @@map("lecture_activities")
 }
-

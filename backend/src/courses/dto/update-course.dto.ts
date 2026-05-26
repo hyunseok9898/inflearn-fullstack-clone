@@ -2,7 +2,6 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateCourseDto } from './create-course.dto';
 import {
   IsArray,
-  IsBoolean,
   IsNumber,
   IsOptional,
   IsString,
@@ -10,6 +9,11 @@ import {
 } from 'class-validator';
 
 export class UpdateCourseDto extends PartialType(CreateCourseDto) {
+  @ApiProperty({ description: '코스 상태', required: false })
+  @IsString()
+  @IsOptional()
+  status?: string;
+
   @ApiProperty({ description: '코스 1~2줄 짧은 설명', required: false })
   @IsString()
   @IsOptional()
@@ -38,11 +42,6 @@ export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   @IsString()
   @IsOptional()
   level?: string;
-
-  @ApiProperty({ description: '코스 게시 여부', required: false })
-  @IsBoolean()
-  @IsOptional()
-  isPublished?: boolean;
 
   @ApiProperty({ description: '코스 카테고리 ID 목록', required: false })
   @IsArray()
