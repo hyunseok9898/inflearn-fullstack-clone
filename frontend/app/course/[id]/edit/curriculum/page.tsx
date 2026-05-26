@@ -14,5 +14,5 @@ export default async function EditCurriculumPage({
     notFound();
   }
 
-  return <UI course={course.data} />;
+  return <UI initialCourse={course.data} />;
 }
