@@ -7,7 +7,7 @@ import { Course, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import slugify from 'slugify';
+import slugify from 'lib/slugify';
 
 @Injectable()
 export class CoursesService {
