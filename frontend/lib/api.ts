@@ -5,11 +5,13 @@ import {
   coursesControllerCreate,
   coursesControllerFindAll,
   coursesControllerFindOne,
+  coursesControllerSearch,
   coursesControllerUpdate,
   lecturesControllerCreate,
   lecturesControllerDelete,
   lecturesControllerUpdate,
   mediaControllerUploadMedia,
+  SearchCourseDto,
   sectionsControllerCreate,
   sectionsControllerDelete,
   sectionsControllerUpdate,
@@ -189,6 +191,14 @@ export const getProfile = async () => {
 export const updateProfile = async (updateUserDto: UpdateUserDto) => {
   const { data, error } = await usersControllerUpdateProfile({
     body: updateUserDto,
+  });
+
+  return { data, error };
+};
+
+export const searchCourses = async (searchCourseDto: SearchCourseDto) => {
+  const { data, error } = await coursesControllerSearch({
+    body: searchCourseDto,
   });
 
   return { data, error };

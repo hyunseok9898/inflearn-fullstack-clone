@@ -24,6 +24,8 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Prisma } from '@prisma/client';
 import { Course as CourseEntity } from 'src/_gen/prisma-class/course';
+import { SearchCourseResponseDto } from './dto/search-response.dto';
+import { SearchCourseDto } from './dto/search-course.dto';
 
 interface RequestWithUser extends Request {
   user: {
@@ -169,5 +171,14 @@ export class CoursesController {
   })
   delete(@Param('id', ParseUUIDPipe) id: string, @Req() req: RequestWithUser) {
     return this.coursesService.delete(id, req.user.sub);
+  }
+
+  @Post('search')
+  @ApiOkResponse({
+    description: '코스 검색',
+    type: SearchCourseResponseDto,
+  })
+  search(@Body() searchCourseDto: SearchCourseDto) {
+    return this.coursesService.searchCourses(searchCourseDto);
   }
 }
