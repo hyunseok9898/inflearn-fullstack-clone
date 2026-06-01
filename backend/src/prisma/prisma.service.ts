@@ -11,6 +11,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
     super({
       adapter,
+      omit: {
+        user: {
+          hashedPassword: true,
+        },
+      },
     });
   }
 

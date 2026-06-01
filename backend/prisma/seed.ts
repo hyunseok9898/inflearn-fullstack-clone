@@ -1,16 +1,11 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { type Section, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import slugify from '../lib/slugify';
 import { v4 as uuidv4 } from 'uuid';
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
 const prisma = new PrismaClient({
-  adapter,
-  log: ['error'],
+  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
 });
 
 async function main() {
@@ -49,9 +44,99 @@ async function main() {
   const categoryMap = Object.fromEntries(categories.map((c) => [c.slug, c.id]));
   console.log('카테고리 시드 데이터가 성공적으로 생성되었습니다.');
 
+  const generateRandomThumbnailUrl = () => {
+    const randomNumber = Math.floor(Math.random() * 4);
+    return [
+      'https://cdn.inflearn.com/public/courses/332907/cover/2975d3d7-5dcc-4e2a-977c-98b11134cfb6/332907.jpg?w=420',
+      'https://cdn.inflearn.com/public/files/courses/337025/cover/01jv1n5rh7hkqc4ff3cjcdwhzt?w=420',
+      'https://cdn.inflearn.com/public/courses/334643/cover/fce6d336-c676-4c92-83b4-79512558ab8b/334643.jpg?w=420',
+      'https://cdn.inflearn.com/public/courses/334439/cover/9e628f60-3721-4d03-b36d-a577593b96fd/334439.jpg?w=420',
+    ][randomNumber];
+  };
+
   const generateRandomLevel = () => {
     const randomNumber = Math.floor(Math.random() * 3);
     return ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'][randomNumber];
+  };
+
+  // 랜덤 생성 함수들 추가
+  const generateRandomSectionData = () => {
+    const sectionTitles = [
+      '기초 개념 이해하기',
+      '실전 프로젝트 시작',
+      '심화 기능 학습',
+      '고급 기술 활용',
+      '프로젝트 완성하기',
+      '배포와 운영',
+    ];
+    const sectionCount = Math.floor(Math.random() * 3) + 3; // 3-5개
+    return Array.from({ length: sectionCount }, (_, index) => ({
+      title: sectionTitles[index % sectionTitles.length],
+      description: `${index + 1}번째 섹션입니다.`,
+      order: index + 1,
+    }));
+  };
+
+  const generateRandomLectureData = (sectionCount: number) => {
+    const lectureTitles = [
+      '개념 소개',
+      '기본 사용법',
+      '실습하기',
+      '심화 학습',
+      '프로젝트 적용',
+      '문제 해결',
+      '최적화',
+      '정리 및 마무리',
+    ];
+    const lectureCount = Math.floor(Math.random() * 4) + 3; // 3-6개
+    return Array.from({ length: lectureCount }, (_, index) => ({
+      title: lectureTitles[index % lectureTitles.length],
+      description: `강의 ${index + 1}번의 설명입니다.`,
+      order: index + 1,
+      duration: Math.floor(Math.random() * (1200 - 300 + 1)) + 300, // 5-20분을 초 단위로 (300-1200초)
+      isPreview: index < 2, // 처음 2개는 미리보기
+    }));
+  };
+
+  const generateRandomReviews = () => {
+    const reviewContents = [
+      '정말 유익한 강의였습니다. 실무에 바로 적용할 수 있는 내용들이 많았어요.',
+      '강사님의 설명이 너무 이해하기 쉬웠습니다. 추천합니다!',
+      '초보자도 따라할 수 있을 정도로 친절하게 설명해주셨네요.',
+      '실습 위주의 강의라서 더 도움이 되었습니다.',
+      '기대했던 것보다 더 많은 것을 배울 수 있었습니다.',
+    ];
+    // 각 강의당 하나의 리뷰만 생성 (유니크 제약 조건 때문에)
+    const randomIndex = Math.floor(Math.random() * reviewContents.length);
+    return {
+      content: reviewContents[randomIndex],
+      rating: Math.floor(Math.random() * 2) + 4, // 4-5점
+      userId: userId,
+    };
+  };
+
+  const generateRandomQuestions = () => {
+    const questionTitles = [
+      '설치 중 오류가 발생합니다',
+      '이 부분이 잘 이해가 안 돼요',
+      '실습 환경 설정 질문',
+      '추가 학습 자료 추천 부탁드립니다',
+      '프로젝트 적용 시 문제점',
+    ];
+    const questionContents = [
+      '강의를 듣다가 막힌 부분이 있어서 질문드립니다.',
+      '이 부분에 대해 더 자세한 설명 부탁드려요.',
+      '실습 환경 설정에서 어려움을 겪고 있습니다.',
+      '관련된 추가 자료가 있다면 공유해주세요.',
+      '실제 프로젝트에 적용하려는데 어려움이 있습니다.',
+    ];
+    // 각 강의당 하나의 질문만 생성
+    const randomIndex = Math.floor(Math.random() * questionTitles.length);
+    return {
+      title: questionTitles[randomIndex],
+      content: questionContents[randomIndex],
+      userId: userId,
+    };
   };
 
   // 2. 강의 데이터 배열 (30개 전체)
@@ -66,8 +151,6 @@ async function main() {
       price: 55000,
       discountPrice: 44000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Next.js 풀스택 마스터클래스',
@@ -78,8 +161,6 @@ async function main() {
       price: 77000,
       discountPrice: 66000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Python 데이터 분석 완전정복',
@@ -90,8 +171,6 @@ async function main() {
       price: 49000,
       discountPrice: 39000,
       categorySlug: 'data-science',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Flutter 모바일 앱 개발',
@@ -102,8 +181,6 @@ async function main() {
       price: 66000,
       discountPrice: 52000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Docker & Kubernetes 실전 DevOps',
@@ -114,8 +191,6 @@ async function main() {
       price: 88000,
       discountPrice: 70000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Vue 3 Composition API 마스터',
@@ -126,8 +201,6 @@ async function main() {
       price: 45000,
       discountPrice: 36000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'AWS 서버리스 아키텍처',
@@ -138,8 +211,6 @@ async function main() {
       price: 72000,
       discountPrice: 60000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: '머신러닝과 TensorFlow 실전',
@@ -150,8 +221,6 @@ async function main() {
       price: 85000,
       discountPrice: 68000,
       categorySlug: 'artificial-intelligence',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Spring Boot 마이크로서비스',
@@ -162,8 +231,6 @@ async function main() {
       price: 65000,
       discountPrice: 50000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Go 언어 백엔드 개발',
@@ -174,8 +241,6 @@ async function main() {
       price: 58000,
       discountPrice: 46000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'iOS SwiftUI 앱 개발',
@@ -186,8 +251,6 @@ async function main() {
       price: 69000,
       discountPrice: 55000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Rust 시스템 프로그래밍',
@@ -198,8 +261,6 @@ async function main() {
       price: 62000,
       discountPrice: 49000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1629654297299-c8506221ca97?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Figma UI/UX 디자인 마스터',
@@ -210,8 +271,6 @@ async function main() {
       price: 42000,
       discountPrice: 33000,
       categorySlug: 'design',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: '블록체인과 스마트 컨트랙트',
@@ -222,8 +281,6 @@ async function main() {
       price: 95000,
       discountPrice: 76000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1639322537228-f710d846310a?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'MongoDB 데이터베이스 설계',
@@ -234,8 +291,6 @@ async function main() {
       price: 48000,
       discountPrice: 38000,
       categorySlug: 'data-science',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'JavaScript ES6+ 완전정복',
@@ -245,8 +300,6 @@ async function main() {
       price: 39000,
       discountPrice: 31000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Unity 게임 개발 완전정복',
@@ -257,8 +310,6 @@ async function main() {
       price: 78000,
       discountPrice: 62000,
       categorySlug: 'game-dev-all',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'PostgreSQL 고급 쿼리 최적화',
@@ -269,8 +320,6 @@ async function main() {
       price: 54000,
       discountPrice: 43000,
       categorySlug: 'data-science',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Jenkins CI/CD 자동화',
@@ -281,8 +330,6 @@ async function main() {
       price: 61000,
       discountPrice: 48000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1531746790731-6c087fecd65a?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'GraphQL API 개발 마스터',
@@ -293,8 +340,6 @@ async function main() {
       price: 52000,
       discountPrice: 41000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Electron 데스크탑 앱 개발',
@@ -305,8 +350,6 @@ async function main() {
       price: 47000,
       discountPrice: 37000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Tailwind CSS 반응형 디자인',
@@ -317,8 +360,6 @@ async function main() {
       price: 35000,
       discountPrice: 28000,
       categorySlug: 'design',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Redis 캐싱 전략과 최적화',
@@ -329,8 +370,6 @@ async function main() {
       price: 43000,
       discountPrice: 34000,
       categorySlug: 'data-science',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'SvelteKit 모던 웹 개발',
@@ -341,8 +380,6 @@ async function main() {
       price: 51000,
       discountPrice: 40000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: '사이버 보안과 윤리적 해킹',
@@ -353,8 +390,6 @@ async function main() {
       price: 89000,
       discountPrice: 71000,
       categorySlug: 'it',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Firebase 실시간 데이터베이스',
@@ -365,8 +400,6 @@ async function main() {
       price: 44000,
       discountPrice: 35000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Kotlin 안드로이드 개발',
@@ -377,8 +410,6 @@ async function main() {
       price: 67000,
       discountPrice: 53000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Apache Kafka 스트리밍',
@@ -389,8 +420,6 @@ async function main() {
       price: 82000,
       discountPrice: 65000,
       categorySlug: 'data-science',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Shopify 이커머스 개발',
@@ -401,8 +430,6 @@ async function main() {
       price: 56000,
       discountPrice: 44000,
       categorySlug: 'business',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=420&q=80',
     },
     {
       title: 'Terraform 인프라스트럭처 코드화',
@@ -413,8 +440,6 @@ async function main() {
       price: 73000,
       discountPrice: 58000,
       categorySlug: 'it-programming',
-      thumbnailUrl:
-        'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=420&q=80',
     },
   ].map((course) => ({
     ...course,
@@ -422,6 +447,7 @@ async function main() {
     level: generateRandomLevel(),
     status: 'PUBLISHED',
     instructorId: userId,
+    thumbnailUrl: generateRandomThumbnailUrl(),
     createdAt: now,
     updatedAt: now,
   }));
@@ -437,6 +463,87 @@ async function main() {
     });
   }
   console.log('강의 30개가 성공적으로 생성되었습니다.');
+
+  // 4. 모든 강의에 대한 추가 데이터 생성
+  const courses = await prisma.course.findMany();
+
+  // Section과 Lecture 데이터 삭제 후 재생성
+  await prisma.lecture.deleteMany({});
+  await prisma.section.deleteMany({});
+
+  for (const course of courses) {
+    // 섹션 생성
+    const sectionData = generateRandomSectionData();
+    const createdSections: Section[] = [];
+
+    for (const section of sectionData) {
+      const createdSection = await prisma.section.create({
+        data: {
+          ...section,
+          courseId: course.id,
+          createdAt: now,
+          updatedAt: now,
+        },
+      });
+      createdSections.push(createdSection);
+    }
+
+    // 각 섹션에 강의 생성
+    for (const section of createdSections) {
+      const lectureData = generateRandomLectureData(createdSections.length);
+
+      for (const lecture of lectureData) {
+        await prisma.lecture.create({
+          data: {
+            ...lecture,
+            sectionId: section.id,
+            courseId: course.id,
+            createdAt: now,
+            updatedAt: now,
+          },
+        });
+      }
+    }
+
+    // 리뷰 생성
+    const reviewData = generateRandomReviews();
+    await prisma.courseReview.create({
+      data: {
+        ...reviewData,
+        courseId: course.id,
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+
+    // 수강 등록 생성
+    await prisma.courseEnrollment.create({
+      data: {
+        userId: userId,
+        courseId: course.id,
+        enrolledAt: new Date(
+          now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+        ), // 최근 30일 내
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+
+    // 질문 생성
+    const questionData = generateRandomQuestions();
+    await prisma.courseQuestion.create({
+      data: {
+        ...questionData,
+        courseId: course.id,
+        createdAt: now,
+        updatedAt: now,
+      },
+    });
+  }
+
+  console.log(
+    '모든 강의에 대한 섹션, 강의, 리뷰, 수강등록, 질문 데이터가 생성되었습니다.',
+  );
 }
 
 main()
