@@ -3,7 +3,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Course, Prisma } from '@prisma/client';
+import { Course, CourseFavorite, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -11,6 +11,7 @@ import slugify from 'lib/slugify';
 import { SearchCourseDto } from './dto/search-course.dto';
 import { SearchCourseResponseDto } from './dto/search-response.dto';
 import { CourseDetailDto } from './dto/course-detail.dto';
+import { GetFavoriteResponseDto } from './dto/favorite.dto';
 
 @Injectable()
 export class CoursesService {
@@ -276,5 +277,105 @@ export class CoursesService {
         hasPrev,
       },
     };
+  }
+
+  async addFavorite(courseId: string, userId: string): Promise<boolean> {
+    try {
+      const existingFavorite = await this.prisma.courseFavorite.findFirst({
+        where: {
+          userId,
+          courseId,
+        },
+      });
+      if (existingFavorite) {
+        return true;
+      }
+
+      await this.prisma.courseFavorite.create({
+        data: {
+          userId,
+          courseId,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  async removeFavorite(courseId: string, userId: string): Promise<boolean> {
+    try {
+      const existingFavorite = await this.prisma.courseFavorite.findFirst({
+        where: {
+          userId,
+          courseId,
+        },
+      });
+      if (existingFavorite) {
+        await this.prisma.courseFavorite.delete({
+          where: {
+            id: existingFavorite.id,
+          },
+        });
+        return true;
+      }
+
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  }
+
+  async getFavorite(
+    courseId: string,
+    userId?: string,
+  ): Promise<GetFavoriteResponseDto> {
+    const course = await this.prisma.course.findUnique({
+      where: {
+        id: courseId,
+      },
+      include: {
+        _count: {
+          select: {
+            favorites: true,
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw new NotFoundException(`${courseId} 코스를 찾지 못했습니다.`);
+    }
+
+    if (userId) {
+      const existingFavorite = await this.prisma.courseFavorite.findFirst({
+        where: {
+          userId,
+          courseId,
+        },
+      });
+      return {
+        isFavorite: !!existingFavorite,
+        favoriteCount: course._count.favorites,
+      };
+    } else {
+      return {
+        isFavorite: false,
+        favoriteCount: course._count.favorites,
+      };
+    }
+  }
+
+  async getMyFavorites(userId: string): Promise<CourseFavorite[]> {
+    const existingFavorites = await this.prisma.courseFavorite.findMany({
+      where: {
+        userId,
+      },
+    });
+
+    return existingFavorites;
   }
 }

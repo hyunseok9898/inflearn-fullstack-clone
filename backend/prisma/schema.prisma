@@ -58,6 +58,7 @@ model User {
   courses           Course[]
   lectureActivities LectureActivity[]
   sessions          Session[]
+  courseFavorites   CourseFavorite[]
 
   @@map("users")
 }
@@ -93,6 +94,7 @@ model Course {
   instructor  User               @relation(fields: [instructorId], references: [id])
   lectures    Lecture[]
   sections    Section[]
+  favorites   CourseFavorite[]
 
   @@map("courses")
 }
@@ -199,6 +201,19 @@ model CourseComment {
   user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("course_comments")
+}
+
+model CourseFavorite {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  courseId  String   @map("course_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("course_favorites")
 }
 
 model LectureActivity {
