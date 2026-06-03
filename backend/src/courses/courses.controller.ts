@@ -102,12 +102,14 @@ export class CoursesController {
   }
 
   @Get(':id')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('access-token')
   @ApiOkResponse({
     description: '코스 상세 정보',
     type: CourseDetailDto,
   })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.coursesService.findOne(id);
+  findOne(@Req() req: RequestWithUser, @Param('id', ParseUUIDPipe) id: string) {
+    return this.coursesService.findOne(id, req.user.sub);
   }
 
   @Patch(':id')
@@ -188,5 +190,16 @@ export class CoursesController {
   @ApiOkResponse({ type: CourseFavoriteEntity, isArray: true })
   getMyFavorites(@Req() req: RequestWithUser) {
     return this.coursesService.getMyFavorites(req.user.sub);
+  }
+
+  @Post(':id/enroll')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOkResponse({ type: Boolean })
+  enrollCourse(
+    @Req() req: RequestWithUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.coursesService.enrollCourse(id, req.user.sub);
   }
 }
