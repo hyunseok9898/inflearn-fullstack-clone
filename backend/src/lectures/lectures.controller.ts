@@ -119,7 +119,7 @@ export class LecturesController {
     type: LectureActivityEntity,
   })
   updateLectureActivity(
-    @Req() req: Request,
+    @Req() req: RequestWithUser,
     @Param('lectureId') lectureId: string,
     @Body() updateLectureActivityDto: UpdateLectureActivityDto,
   ) {
@@ -138,7 +138,7 @@ export class LecturesController {
     type: LectureActivityEntity,
   })
   getLectureActivity(
-    @Req() req: Request,
+    @Req() req: RequestWithUser,
     @Param('lectureId') lectureId: string,
   ) {
     return this.lecturesService.getLectureActivity(lectureId, req.user.sub);
