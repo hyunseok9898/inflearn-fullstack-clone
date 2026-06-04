@@ -13,6 +13,7 @@ import { SearchCourseDto } from './dto/search-course.dto';
 import { SearchCourseResponseDto } from './dto/search-response.dto';
 import { CourseDetailDto } from './dto/course-detail.dto';
 import { GetFavoriteResponseDto } from './dto/favorite.dto';
+import { Lecture } from 'src/_gen/prisma-class/lecture';
 
 @Injectable()
 export class CoursesService {
@@ -80,6 +81,7 @@ export class CoursesService {
                 isPreview: true,
                 duration: true,
                 order: true,
+                videoStorageInfo: true,
               },
               orderBy: {
                 order: 'asc',
@@ -104,6 +106,7 @@ export class CoursesService {
       return null;
     }
 
+    const isInstructor = course.instructorId === userId;
     const isEnrolled = userId
       ? !!(await this.prisma.courseEnrollment.findFirst({
           where: {
@@ -128,8 +131,22 @@ export class CoursesService {
       0,
     );
 
+    const sectionsWithFilteredVideoStorageInfo = course.sections.map(
+      (section) => ({
+        ...section,
+        lectures: section.lectures.map((lecture) => ({
+          ...lecture,
+          videoStorageInfo:
+            isInstructor || isEnrolled || lecture.isPreview
+              ? lecture.videoStorageInfo
+              : null,
+        })),
+      }),
+    );
+
     const result = {
       ...course,
+      sections: sectionsWithFilteredVideoStorageInfo,
       isEnrolled,
       totalEnrollments: course._count.enrollments,
       averageRating: Math.round(averageRating * 10) / 10,
