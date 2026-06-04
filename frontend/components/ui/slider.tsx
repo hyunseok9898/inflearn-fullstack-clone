@@ -1,6 +1,6 @@
-import { Slider as SliderPrimitive } from "@base-ui/react/slider"
+import { Slider as SliderPrimitive } from "@base-ui/react/slider";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Slider({
   className,
@@ -8,13 +8,15 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  onValueChange,
+  onValueCommitted,
   ...props
 }: SliderPrimitive.Root.Props) {
   const _values = Array.isArray(value)
     ? value
     : Array.isArray(defaultValue)
       ? defaultValue
-      : [min, max]
+      : [min, max];
 
   return (
     <SliderPrimitive.Root
@@ -25,6 +27,8 @@ function Slider({
       min={min}
       max={max}
       thumbAlignment="edge"
+      onValueChange={onValueChange}
+      onValueCommitted={onValueCommitted}
       {...props}
     >
       <SliderPrimitive.Control className="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
@@ -46,7 +50,7 @@ function Slider({
         ))}
       </SliderPrimitive.Control>
     </SliderPrimitive.Root>
-  )
+  );
 }
 
-export { Slider }
+export { Slider };

@@ -13,7 +13,6 @@ import { SearchCourseDto } from './dto/search-course.dto';
 import { SearchCourseResponseDto } from './dto/search-response.dto';
 import { CourseDetailDto } from './dto/course-detail.dto';
 import { GetFavoriteResponseDto } from './dto/favorite.dto';
-import { Lecture } from 'src/_gen/prisma-class/lecture';
 
 @Injectable()
 export class CoursesService {

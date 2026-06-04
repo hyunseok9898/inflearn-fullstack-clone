@@ -5,7 +5,9 @@
       "Bash(git checkout *)",
       "Bash(npx tsc *)",
       "Bash(Select-String -Pattern \"eslint\")",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(cd \"c:\\\\Users\\\\user\\\\OneDrive\\\\Desktop\\\\现石 개발\\\\inflearn-fullstack-clone\\\\backend\" && find . -type f -name \"*.ts\" | head -30)",
+      "Read(//c/Users/user/OneDrive/Desktop/现石 개발/inflearn-fullstack-clone/**)"
     ]
   }
 }
