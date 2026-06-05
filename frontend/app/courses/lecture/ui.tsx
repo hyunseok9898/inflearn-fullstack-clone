@@ -209,7 +209,11 @@ function VideoPlayer({
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const hasSeekOnReadyRef = React.useRef(false);
   const seekingRef = React.useRef(false);
-  const progressRef = React.useRef({ played: 0, playedSeconds: 0, totalDuration: 0 });
+  const progressRef = React.useRef({
+    played: 0,
+    playedSeconds: 0,
+    totalDuration: 0,
+  });
 
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -243,7 +247,7 @@ function VideoPlayer({
       }
     }, 10000);
     return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lecture.id]);
 
   const handlePlayPause = () => {
@@ -293,7 +297,11 @@ function VideoPlayer({
         setTotalDuration(d);
         setPlayed(p);
         setPlayedSeconds(ps);
-        progressRef.current = { played: p, playedSeconds: ps, totalDuration: d };
+        progressRef.current = {
+          played: p,
+          playedSeconds: ps,
+          totalDuration: d,
+        };
       }
     }
   };
@@ -363,9 +371,28 @@ function VideoPlayer({
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
         onPlay={() => setPlaying(true)}
-        onPause={() => { if (!seekingRef.current) setPlaying(false); }}
-        onSeeked={() => { seekingRef.current = false; }}
+        onPause={() => {
+          if (!seekingRef.current) setPlaying(false);
+        }}
+        onSeeked={() => {
+          seekingRef.current = false;
+        }}
       />
+
+      {/* Center play/pause button */}
+      <button
+        onClick={handlePlayPause}
+        aria-label="play-pause"
+        className="absolute inset-0 flex items-center justify-center group"
+      >
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {playing ? (
+            <PauseIcon className="size-8" />
+          ) : (
+            <PlayIcon className="size-8 translate-x-0.5" />
+          )}
+        </div>
+      </button>
 
       {/* Lecture title overlay */}
       <div className="absolute top-2 left-2 flex items-center">
