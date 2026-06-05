@@ -3,8 +3,10 @@
 import React, { useMemo, useEffect, useState } from "react";
 import {
   CourseDetailDto,
+  LectureActivity as LectureActivityEntity,
   Lecture as LectureEntity,
   Section as SectionEntity,
+  UpdateLectureActivityDto,
 } from "@/generated/openapi-client";
 import {
   Accordion,
@@ -40,6 +42,8 @@ import {
   ListIcon,
   XIcon,
 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import * as api from "@/lib/api";
 
 /*****************
  * Helper Utils  *
@@ -182,18 +186,20 @@ const ReactPlayer = dynamic(() => import("react-player"), {
       Loading player...
     </div>
   ),
-}) as React.ComponentType<
-  React.ComponentPropsWithRef<"video"> & {
-    src?: string;
-    playing?: boolean;
-    volume?: number;
-    playbackRate?: number;
-    onReady?: () => void;
-  }
->;
+});
 
-function VideoPlayer({ lecture }: { lecture: LectureEntity }) {
+function VideoPlayer({
+  lecture,
+  lectureActivity,
+}: {
+  lecture: LectureEntity;
+  lectureActivity?: LectureActivityEntity;
+}) {
   const router = useRouter();
+  const updateLectureActivityMutation = useMutation({
+    mutationFn: (updateLectureActivityDto: UpdateLectureActivityDto) =>
+      api.updateLectureActivity(lecture.id, updateLectureActivityDto),
+  });
 
   const videoUrl = (lecture.videoStorageInfo as any)?.cloudFront?.url as
     | string
@@ -201,58 +207,116 @@ function VideoPlayer({ lecture }: { lecture: LectureEntity }) {
 
   const playerRef = React.useRef<HTMLVideoElement>(null);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const hasSeekOnReadyRef = React.useRef(false);
+  const seekingRef = React.useRef(false);
+  const progressRef = React.useRef({ played: 0, playedSeconds: 0, totalDuration: 0 });
 
-  const [playing, setPlaying] = React.useState(false);
-  const [muted, setMuted] = React.useState(false);
-  const [volume, setVolume] = React.useState(0.8);
-  const [played, setPlayed] = React.useState(0);
-  const [seeking, setSeeking] = React.useState(false);
-  const [duration, setDuration] = React.useState(0);
-  const [playbackRate, setPlaybackRate] = React.useState(1);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [volume, setVolume] = useState(0.8);
+  const [played, setPlayed] = useState(0);
+  const [playedSeconds, setPlayedSeconds] = useState(0);
+  const [totalDuration, setTotalDuration] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  useEffect(() => {
+    hasSeekOnReadyRef.current = false;
+    seekingRef.current = false;
+    progressRef.current = { played: 0, playedSeconds: 0, totalDuration: 0 };
+    setPlayed(0);
+    setPlayedSeconds(0);
+    setTotalDuration(0);
+  }, [lecture.id]);
+
+  // 10초마다 재생 위치 자동 저장
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const { played: p, playedSeconds: ps } = progressRef.current;
+      if (p > 0) {
+        updateLectureActivityMutation.mutate({
+          duration: ps,
+          isCompleted: p >= 0.95,
+          lastWatchedAt: new Date().toISOString(),
+          progress: Math.round(p * 100),
+        });
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lecture.id]);
+
   const handlePlayPause = () => {
-    const el = playerRef.current;
-    if (!el) return;
-    if (playing) {
-      el.pause();
-    } else {
-      el.play();
-    }
+    setPlaying((p) => !p);
+    updateLectureActivityMutation.mutate({
+      duration: playedSeconds,
+      isCompleted: played >= 0.95,
+      lastWatchedAt: new Date().toISOString(),
+      progress: Math.round(played * 100),
+    });
   };
 
-  const handleMute = () => {
-    setMuted((m) => !m);
+  const handleMute = () => setMuted((m) => !m);
+
+  const extractSliderValue = (v: number | readonly number[]): number =>
+    Array.isArray(v) ? (v as number[])[0] : (v as number);
+
+  const handleVolumeChange = (values: number | readonly number[]) => {
+    const vol = extractSliderValue(values) / 100;
+    setVolume(vol);
+    setMuted(vol === 0);
   };
 
-  const handleVolumeChange = (value: number | readonly number[]) => {
-    const v = (Array.isArray(value) ? value[0] : value) / 100;
-    setVolume(v);
-    setMuted(v === 0);
+  const handleSeekChange = (values: number | readonly number[]) => {
+    const val = extractSliderValue(values) / 100;
+    if (Number.isFinite(val)) setPlayed(val);
   };
 
-  const handleSeekChange = (value: number | readonly number[]) => {
-    const val = Array.isArray(value) ? value[0] : value;
-    setPlayed(val / 100);
-  };
-
-  const handleSeekCommit = (value: number | readonly number[]) => {
-    const fraction = (Array.isArray(value) ? value[0] : value) / 100;
+  const handleSeekCommit = (values: number | readonly number[]) => {
+    const fraction = extractSliderValue(values) / 100;
+    if (!Number.isFinite(fraction)) return;
     if (playerRef.current) {
-      playerRef.current.currentTime = fraction * duration;
+      const d = playerRef.current.duration;
+      if (Number.isFinite(d) && d > 0) {
+        playerRef.current.currentTime = fraction * d;
+      }
     }
   };
 
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
-    if (!seeking) {
+    if (!seekingRef.current) {
       const el = e.currentTarget;
-      const fraction = el.duration ? el.currentTime / el.duration : 0;
-      setPlayed(fraction);
+      const d = el.duration;
+      if (d && !isNaN(d)) {
+        const p = el.currentTime / d;
+        const ps = Math.floor(el.currentTime);
+        setTotalDuration(d);
+        setPlayed(p);
+        setPlayedSeconds(ps);
+        progressRef.current = { played: p, playedSeconds: ps, totalDuration: d };
+      }
     }
   };
 
   const handleLoadedMetadata = (e: React.SyntheticEvent<HTMLVideoElement>) => {
-    setDuration(e.currentTarget.duration);
+    const d = e.currentTarget.duration;
+    if (d && !isNaN(d)) {
+      setTotalDuration(d);
+      if (lectureActivity && !hasSeekOnReadyRef.current) {
+        hasSeekOnReadyRef.current = true;
+        e.currentTarget.currentTime = lectureActivity.duration;
+      }
+    }
+  };
+
+  const handleEnded = () => {
+    setPlaying(false);
+    updateLectureActivityMutation.mutate({
+      duration: Math.round(totalDuration),
+      isCompleted: true,
+      lastWatchedAt: new Date().toISOString(),
+      progress: 100,
+    });
   };
 
   const toggleFullscreen = () => {
@@ -268,28 +332,11 @@ function VideoPlayer({ lecture }: { lecture: LectureEntity }) {
     const handleFullscreenChange = () => {
       setIsFullscreen(document.fullscreenElement === wrapperRef.current);
     };
-
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
-
-  useEffect(() => {
-    const el = playerRef.current;
-    if (!el) return;
-    if (playing) {
-      el.play().catch(() => setPlaying(false));
-    } else {
-      el.pause();
-    }
-  }, [playing]);
-
-  useEffect(() => {
-    if (playerRef.current) {
-      playerRef.current.volume = muted ? 0 : volume;
-    }
-  }, [volume, muted]);
 
   if (!videoUrl) {
     return (
@@ -309,12 +356,15 @@ function VideoPlayer({ lecture }: { lecture: LectureEntity }) {
         volume={volume}
         width="100%"
         height="100%"
+        preload="metadata"
         style={{ backgroundColor: "black" }}
         playbackRate={playbackRate}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
         onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
+        onPause={() => { if (!seekingRef.current) setPlaying(false); }}
+        onSeeked={() => { seekingRef.current = false; }}
       />
 
       {/* Lecture title overlay */}
@@ -335,12 +385,11 @@ function VideoPlayer({ lecture }: { lecture: LectureEntity }) {
           max={100}
           value={[played * 100]}
           onValueChange={(v) => {
-            setSeeking(true);
+            seekingRef.current = true;
             handleSeekChange(v);
           }}
           onValueCommitted={(v) => {
             handleSeekCommit(v);
-            setSeeking(false);
           }}
         />
         {/* bottom control bar */}
@@ -357,7 +406,7 @@ function VideoPlayer({ lecture }: { lecture: LectureEntity }) {
 
             {/* time */}
             <span className="tabular-nums text-xs">
-              {formatTime(played * duration)} / {formatTime(duration)}
+              {formatTime(playedSeconds)} / {formatTime(totalDuration)}
             </span>
 
             {/* volume */}
@@ -373,7 +422,7 @@ function VideoPlayer({ lecture }: { lecture: LectureEntity }) {
               min={0}
               max={100}
               value={[muted ? 0 : volume * 100]}
-              onValueChange={handleVolumeChange}
+              onValueChange={(v) => handleVolumeChange(v)}
             />
           </div>
 
@@ -381,9 +430,7 @@ function VideoPlayer({ lecture }: { lecture: LectureEntity }) {
             {/* speed select */}
             <Select
               value={playbackRate.toString()}
-              onValueChange={(v) => {
-                if (v !== null) setPlaybackRate(parseFloat(v));
-              }}
+              onValueChange={(v) => v && setPlaybackRate(parseFloat(v))}
             >
               <SelectTrigger className="w-16 h-8 bg-black/20 border border-white/20 text-xs">
                 <SelectValue />
@@ -450,25 +497,28 @@ function LectureHeader({
 export default function UI({
   course,
   lectureId,
+  lectureActivities,
 }: {
   course: CourseDetailDto;
   lectureId?: string;
+  lectureActivities: LectureActivityEntity[];
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const currentLectureId = lectureId ?? course.sections[0].lectures[0].id;
 
   const allLectures = useMemo(() => {
     return course.sections.flatMap((section) => section.lectures);
   }, [course.sections]);
 
   const currentLecture = useMemo(() => {
-    if (lectureId) {
-      const found = allLectures.find((l) => l.id === lectureId);
+    if (currentLectureId) {
+      const found = allLectures.find((l) => l.id === currentLectureId);
       if (found) return found;
     }
     // fallback to first lecture
     return allLectures[0];
-  }, [lectureId, allLectures]);
+  }, [currentLectureId, allLectures]);
 
   const handleSelectLecture = (lecture: LectureEntity) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -481,13 +531,18 @@ export default function UI({
     (l) => l.id === currentLecture.id,
   );
 
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <div className="flex w-screen absolute top-0 left-1/2 -translate-x-1/2 h-screen bg-black">
       {/* Video area */}
       <div className="flex-1 relative">
-        <VideoPlayer lecture={currentLecture} />
+        <VideoPlayer
+          lecture={currentLecture}
+          lectureActivity={lectureActivities.find(
+            (activity) => activity.lectureId === currentLectureId,
+          )}
+        />
 
         {/* Floating button to open sidebar when closed */}
         {!sidebarOpen && (

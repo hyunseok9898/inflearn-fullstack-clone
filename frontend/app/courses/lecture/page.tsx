@@ -12,6 +12,7 @@ export default async function LecturePage({
 }) {
   const { courseId, lectureId } = await searchParams;
   const course = await api.getCourseById(courseId);
+  const lectureActivities = await api.getAllLectureActivities(courseId);
 
   const courseData = course.data;
 
@@ -19,5 +20,11 @@ export default async function LecturePage({
     notFound();
   }
 
-  return <UI course={courseData!} lectureId={lectureId} />;
+  return (
+    <UI
+      course={courseData!}
+      lectureId={lectureId}
+      lectureActivities={lectureActivities.data ?? []}
+    />
+  );
 }

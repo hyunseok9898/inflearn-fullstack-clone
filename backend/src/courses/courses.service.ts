@@ -432,4 +432,15 @@ export class CoursesService {
       throw error;
     }
   }
+
+  async getAllLectureActivity(courseId: string, userId: string) {
+    const courseActivites = await this.prisma.lectureActivity.findMany({
+      where: {
+        userId,
+        courseId,
+      },
+    });
+
+    return courseActivites;
+  }
 }

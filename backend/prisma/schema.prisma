@@ -87,14 +87,15 @@ model Course {
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
-  categories  CourseCategory[]
-  enrollments CourseEnrollment[]
-  questions   CourseQuestion[]
-  reviews     CourseReview[]
-  instructor  User               @relation(fields: [instructorId], references: [id])
-  lectures    Lecture[]
-  sections    Section[]
-  favorites   CourseFavorite[]
+  categories        CourseCategory[]
+  enrollments       CourseEnrollment[]
+  questions         CourseQuestion[]
+  reviews           CourseReview[]
+  instructor        User               @relation(fields: [instructorId], references: [id])
+  lectures          Lecture[]
+  sections          Section[]
+  favorites         CourseFavorite[]
+  lectureActivities LectureActivity[]
 
   @@map("courses")
 }
@@ -219,13 +220,16 @@ model CourseFavorite {
 model LectureActivity {
   id            String   @id @default(uuid())
   userId        String   @map("user_id")
+  courseId      String   @map("course_id")
   lectureId     String   @map("lecture_id")
   progress      Int      @default(0)
+  duration      Int      @default(0)
   isCompleted   Boolean  @default(false) @map("is_completed")
   lastWatchedAt DateTime @default(now()) @map("last_watched_at")
   lecture       Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  course        Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, lectureId])
+  @@unique([userId, courseId, lectureId])
   @@map("lecture_activities")
 }
