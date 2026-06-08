@@ -7,6 +7,7 @@ import {
   coursesControllerEnrollCourse,
   coursesControllerFindAllMyCourses,
   coursesControllerFindOne,
+  coursesControllerGetCourseReviews,
   coursesControllerGetFavorite,
   coursesControllerGetLectureActivity,
   coursesControllerGetMyFavorites,
@@ -273,6 +274,26 @@ export const getAllLectureActivities = async (courseId: string) => {
   const { data, error } = await coursesControllerGetLectureActivity({
     path: {
       courseId,
+    },
+  });
+
+  return { data, error };
+};
+
+export const getCourseReviews = async (
+  courseId: string,
+  page: number,
+  pageSize: number,
+  sort: "latest" | "oldest" | "rating_high" | "ratring_low" = "latest",
+) => {
+  const { data, error } = await coursesControllerGetCourseReviews({
+    path: {
+      courseId,
+    },
+    query: {
+      page,
+      pageSize,
+      sort,
     },
   });
 

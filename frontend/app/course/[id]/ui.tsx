@@ -315,13 +315,27 @@ function Curriculum({
   );
 }
 
-function ReviewsSection({ reviews }: { reviews: CourseReviewEntity[] }) {
-  if (!reviews.length) return null;
+function ReviewsSection({ courseId }: { courseId: string }) {
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<
+    "latest" | "oldest" | "rating_high" | "ratring_low"
+  >("latest");
+  const pageSize = 10;
+
+  const courseReviewsQuery = useQuery({
+    queryFn: () => api.getCourseReviews(courseId, page, pageSize, sort),
+    queryKey: ["course-reviews", courseId, page, sort],
+  });
+
+  if (courseReviewsQuery.isPending) {
+    return <div>리뷰 로딩중...</div>;
+  }
+
   return (
     <section id="reviews" className="mt-12">
       <h2 className="text-2xl font-bold mb-6">수강평</h2>
       <div className="space-y-8">
-        {reviews.map((r) => (
+        {courseReviewsQuery.data?.data?.reviews.map((r) => (
           <div key={r.id} className="space-y-4">
             <div className="flex items-center gap-4">
               {r.user?.image && (
@@ -670,7 +684,7 @@ export default function CourseDetailUI({
           <Introduction course={course} />
           <InstructorBio instructor={course.instructor} />
           <Curriculum courseId={course.id} sections={course.sections} />
-          <ReviewsSection reviews={course.reviews} />
+          <ReviewsSection courseId={course.id} />
         </div>
 
         {/* Floating menu */}
