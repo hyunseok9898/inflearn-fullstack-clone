@@ -343,7 +343,7 @@ function Header({ course }: { course: CourseDetailDto }) {
       </div>
       {/* Thumbnail */}
       {course.thumbnailUrl && (
-        <div className="relative w-full md:w-64 flex-shrink-0">
+        <div className="relative w-full md:w-64 shrink-0">
           <Image
             src={course.thumbnailUrl}
             alt={course.title}
