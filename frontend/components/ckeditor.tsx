@@ -29,7 +29,7 @@ interface CustomEditorProps {
 
 const CKEditor = ({ value, onChange }: CustomEditorProps) => {
   return (
-    <div className="ck-editor-container prose">
+    <div className="ck-editor-container w-full">
       <CKEditorReact
         editor={ClassicEditor}
         data={value}
