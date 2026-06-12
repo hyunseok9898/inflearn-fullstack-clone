@@ -28,7 +28,7 @@ const sidebarItems = [
   },
   {
     label: "강의 질문 관리",
-    href: "/instructor#",
+    href: "/instructor/questions",
   },
   {
     label: "수강평 리스트",
@@ -57,7 +57,7 @@ export default function InstructorSidebar() {
   };
 
   return (
-    <aside className="w-full max-w-[260px] flex flex-col gap-2 p-4 border-r bg-white min-h-screen">
+    <aside className="w-full max-w-65 flex flex-col gap-2 p-4 border-r bg-white min-h-screen">
       {sidebarItems.map((item) => {
         const isActive = pathname === item.href;
         const isPreparing = item.href.endsWith("#");
@@ -67,7 +67,7 @@ export default function InstructorSidebar() {
             key={item.label}
             variant="link"
             className={`justify-start w-full text-base font-medium ${
-              isActive ? "bg-white text-green-700" : ""
+              isActive ? "bg-white text-primary font-bold" : "text-gray-700"
             }`}
             onClick={isPreparing ? alertPreparing : undefined}
             asChild={!isPreparing}

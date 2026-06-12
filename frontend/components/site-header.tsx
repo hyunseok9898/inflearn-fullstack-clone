@@ -189,7 +189,7 @@ export default function SiteHeader({
           </nav>
         )}
       </div>
-      <div className="border-b absolute bottom-0 w-screen left-1/2 -translate-x-1/2"></div>
+      <div className="border-b absolute bottom-0 w-full"></div>
     </header>
   );
 }

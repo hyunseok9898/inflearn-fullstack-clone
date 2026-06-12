@@ -17,6 +17,7 @@ import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { Request } from 'express';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
+import { QuestionWithCommentCountDto } from './dto/question-with-comment-count.dto';
 
 interface RequestWithUser extends Request {
   user: {
@@ -28,6 +29,18 @@ interface RequestWithUser extends Request {
 @Controller('')
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
+
+  @Get('instructor/questions')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOkResponse({
+    description: '지식공유자의 모든 질문 목록 조회',
+    type: QuestionWithCommentCountDto,
+    isArray: true,
+  })
+  findAllByInstructorId(@Req() req: RequestWithUser) {
+    return this.questionsService.findAllByInstructorId(req.user.sub);
+  }
 
   @Get('courses/:courseId/questions')
   @ApiOkResponse({
