@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getLevelText } from "@/lib/level";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface CourseCardProps {
   course: Course;
@@ -19,6 +20,7 @@ interface CourseCardProps {
 
 export default function CourseCard({ user, course }: CourseCardProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const getMyFavoritesQuery = useQuery({
     queryKey: ["myFavorites", user?.id],
     queryFn: () => {
@@ -33,6 +35,14 @@ export default function CourseCard({ user, course }: CourseCardProps) {
   const isFavorite = getMyFavoritesQuery.data?.data?.find(
     (fav) => fav.courseId === course.id,
   );
+
+  const addToCartMutation = useMutation({
+    mutationFn: () => api.addToCart(course.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart-items"] });
+      toast.success(`"${course.title}"이(가) 장바구니에 담겼습니다.`);
+    },
+  });
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -70,7 +80,12 @@ export default function CourseCard({ user, course }: CourseCardProps) {
   const handleCartClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    alert("구현 예정");
+    if (!user) {
+      alert("로그인 후 이용해주세요.");
+      return;
+    }
+
+    addToCartMutation.mutate();
   };
 
   const formatPrice = (price: number) => {
