@@ -35,6 +35,9 @@ importers:
       '@nestjs/swagger':
         specifier: ^11.4.2
         version: 11.4.2(@nestjs/common@11.1.19(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(class-validator@0.15.1)(reflect-metadata@0.2.2)
+      '@portone/server-sdk':
+        specifier: ^0.19.0
+        version: 0.19.0
       '@prisma/adapter-pg':
         specifier: ^7.8.0
         version: 7.8.0
@@ -1134,6 +1137,9 @@ packages:
   '@pkgr/core@0.2.9':
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
+
+  '@portone/server-sdk@0.19.0':
+    resolution: {integrity: sha512-JIbD9HEEqaYuuW0zKU/sapqH1HQBf/Len+8ZPnMRb7E7tHnqRGrKPLS+fom34xUTiF3ZVKTrDjHeQHQ2YZc2og==}
 
   '@prisma/adapter-pg@7.8.0':
     resolution: {integrity: sha512-ygb3UkerK3v8MDpXVgCISdRNDozpxh6+JVJgiIGbSr5KBgz10LLf5ejUskPGoXlsIjxsOu6nuy1JVQr2EKGSlg==}
@@ -5292,6 +5298,8 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.2.9': {}
+
+  '@portone/server-sdk@0.19.0': {}
 
   '@prisma/adapter-pg@7.8.0':
     dependencies:
