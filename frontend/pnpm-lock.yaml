@@ -23,6 +23,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.76.0(react@19.1.0))
+      '@portone/browser-sdk':
+        specifier: ^0.1.8
+        version: 0.1.8
       '@prisma/client':
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
@@ -1217,6 +1220,9 @@ packages:
 
   '@panva/hkdf@1.2.1':
     resolution: {integrity: sha512-6oclG6Y3PiDFcoyk8srjLfVKyMfVCKJ27JwNPViuXziFpmdz+MZnZN/aKY0JGXgYuO/VghU0jcOAZgWXZ1Dmrw==}
+
+  '@portone/browser-sdk@0.1.8':
+    resolution: {integrity: sha512-/9DqqiJckIAaOiCMXYdX+Pyj1Mxa8COInaI7ziUa5KeqnBuE0Q2+7dNSNMor+q6WM7OtnrVqmRRv5cC+gc02sw==}
 
   '@prisma/client@5.22.0':
     resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
@@ -6569,6 +6575,8 @@ snapshots:
   '@open-draft/until@2.1.0': {}
 
   '@panva/hkdf@1.2.1': {}
+
+  '@portone/browser-sdk@0.1.8': {}
 
   '@prisma/client@5.22.0(prisma@5.22.0)':
     optionalDependencies:

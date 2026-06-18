@@ -62,7 +62,7 @@ export class CoursesController {
     return this.coursesService.create(req.user.sub, createCourseDto);
   }
 
-  @Get()
+  @Get('instructor')
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'take', required: false })
   @UseGuards(AccessTokenGuard)
@@ -72,7 +72,7 @@ export class CoursesController {
     type: CourseEntity,
     isArray: true,
   })
-  findAllMyCourses(
+  findAllInstructorCourses(
     @Req() req: RequestWithUser,
     @Query('skip') skip?: string,
     @Query('take') take?: string,
@@ -87,6 +87,18 @@ export class CoursesController {
         createdAt: 'desc',
       },
     });
+  }
+
+  @Get('my')
+  @UseGuards(AccessTokenGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOkResponse({
+    description: '코스 목록',
+    type: CourseEntity,
+    isArray: true,
+  })
+  findAllMyCourses(@Req() req: RequestWithUser) {
+    return this.coursesService.findAllMyCourses(req.user.sub);
   }
 
   @Get(':id')

@@ -252,16 +252,22 @@ export default function SiteHeader({
                 )}
               </div>
               <button
-                className="w-full text-left px-4 py-3 hover:bg-gray-100 focus:outline-none"
+                className="w-full text-left px-4 py-3 hover:bg-gray-100 focus:outline-none cursor-pointer"
                 onClick={() => (window.location.href = "/my/settings/account")}
               >
                 <div className="font-semibold text-gray-800">프로필 수정</div>
               </button>
               <button
-                className="w-full text-left px-4 py-3 hover:bg-gray-100 focus:outline-none border-t border-gray-100"
+                className="w-full text-left px-4 py-3 hover:bg-gray-100 focus:outline-none border-t border-gray-100 cursor-pointer"
                 onClick={() => signOut()}
               >
                 <div className="font-semibold text-gray-800">로그아웃</div>
+              </button>
+              <button
+                className="w-full text-left px-4 py-3 hover:bg-gray-100 focus:outline-none border-t border-gray-100 cursor-pointer"
+                onClick={() => router.push("/my/courses")}
+              >
+                <div className="font-semibold text-gray-800">내 학습</div>
               </button>
             </PopoverContent>
           </Popover>

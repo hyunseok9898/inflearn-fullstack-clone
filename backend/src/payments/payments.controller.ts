@@ -10,6 +10,7 @@ import {
 import { PaymentsService } from './payments.service';
 import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { ApiTags } from '@nestjs/swagger';
 
 interface RequestWithUser extends Request {
   user: {
@@ -17,6 +18,7 @@ interface RequestWithUser extends Request {
   };
 }
 
+@ApiTags('결제')
 @Controller('payments')
 export class PaymentsController {
   private readonly logger = new Logger(PaymentsController.name);
