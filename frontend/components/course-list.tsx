@@ -141,7 +141,7 @@ export default async function CourseList({
       {/* 강의 목록 Grid */}
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {data.courses.map((course) => (
-          <CourseCard key={course.id} course={course} user={session?.user} />
+          <CourseCard key={course.id} course={course} user={session?.user?.id ? { id: session.user.id } : null} />
         ))}
       </div>
 

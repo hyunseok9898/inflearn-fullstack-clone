@@ -1,5 +1,7 @@
 FROM node:20-alpine
 
+RUN apk add --no-cache openssl
+
 RUN npm install -g pnpm
 
 WORKDIR /app
@@ -18,4 +20,4 @@ RUN pnpm run build
 
 EXPOSE 8000
 
-CMD ["pnpm", "run", "start:prod"]
+CMD ["node", "dist/src/main.js"]
