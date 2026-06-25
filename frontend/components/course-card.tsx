@@ -53,12 +53,25 @@ export default function CourseCard({ user, course }: CourseCardProps) {
     },
   });
 
+  const removeFromCartMutation = useMutation({
+    mutationFn: async () => {
+      const result = await api.removeFromCart(course.id);
+      if (result.error) throw result.error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart-items"] });
+    },
+    onError: () => {},
+  });
+
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (user) {
       if (isFavorite) {
         removeFavoriteMutation.mutate();
+        removeFromCartMutation.mutate();
       } else {
         addFavoriteMutation.mutate();
         addToCartMutation.mutate();

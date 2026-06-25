@@ -1,6 +1,8 @@
 FROM node:20-alpine
 
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl && \
+    ln -s /usr/lib/libssl.so.3 /usr/lib/libssl.so.1.1 && \
+    ln -s /usr/lib/libcrypto.so.3 /usr/lib/libcrypto.so.1.1
 
 RUN npm install -g pnpm
 
