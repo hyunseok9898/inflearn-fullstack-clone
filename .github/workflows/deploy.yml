@@ -21,6 +21,8 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           port: ${{ secrets.EC2_PORT || 22 }}
           script: |
+            export PATH="/home/ubuntu/.nvm/versions/node/v24.18.0/bin:$PATH"
+
             cd /home/${{ secrets.EC2_USERNAME }}/inflearn-fullstack-clone
 
             # 최신 코드 가져오기

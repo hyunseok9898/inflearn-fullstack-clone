@@ -38,6 +38,7 @@ export default async function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased max-w-7xl mx-auto`}
       >
+        테스트중...
         <Providers>
           <SiteHeader
             session={session}
