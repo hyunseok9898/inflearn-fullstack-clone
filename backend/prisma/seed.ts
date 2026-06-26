@@ -44,14 +44,68 @@ async function main() {
   const categoryMap = Object.fromEntries(categories.map((c) => [c.slug, c.id]));
   console.log('카테고리 시드 데이터가 성공적으로 생성되었습니다.');
 
-  const generateRandomThumbnailUrl = () => {
-    const randomNumber = Math.floor(Math.random() * 4);
-    return [
-      'https://cdn.inflearn.com/public/courses/332907/cover/2975d3d7-5dcc-4e2a-977c-98b11134cfb6/332907.jpg?w=420',
-      'https://cdn.inflearn.com/public/files/courses/337025/cover/01jv1n5rh7hkqc4ff3cjcdwhzt?w=420',
-      'https://cdn.inflearn.com/public/courses/334643/cover/fce6d336-c676-4c92-83b4-79512558ab8b/334643.jpg?w=420',
-      'https://cdn.inflearn.com/public/courses/334439/cover/9e628f60-3721-4d03-b36d-a577593b96fd/334439.jpg?w=420',
-    ][randomNumber];
+  // 강의 타이틀별 썸네일: picsum.photos seed 방식 (안정적, 고유, 항상 동일 이미지)
+  const thumbnailMap: Record<string, string> = {
+    'React + TypeScript 완전정복':
+      'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=420&q=80',
+    'Next.js 풀스택 마스터클래스':
+      'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=420&q=80',
+    'Python 데이터 분석 완전정복':
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=420&q=80',
+    'Flutter 모바일 앱 개발':
+      'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=420&q=80',
+    'Docker & Kubernetes 실전 DevOps':
+      'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=420&q=80',
+    'Vue 3 Composition API 마스터':
+      'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=420&q=80',
+    'AWS 서버리스 아키텍처':
+      'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=420&q=80',
+    '머신러닝과 TensorFlow 실전':
+      'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=420&q=80',
+    'Spring Boot 마이크로서비스':
+      'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=420&q=80',
+    'Go 언어 백엔드 개발':
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=420&q=80',
+    'iOS SwiftUI 앱 개발':
+      'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=420&q=80',
+    'Rust 시스템 프로그래밍':
+      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=420&q=80',
+    'Figma UI/UX 디자인 마스터':
+      'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=420&q=80',
+    '블록체인과 스마트 컨트랙트':
+      'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=420&q=80',
+    'MongoDB 데이터베이스 설계':
+      'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=420&q=80',
+    'JavaScript ES6+ 완전정복':
+      'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=420&q=80',
+    'Unity 게임 개발 완전정복':
+      'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=420&q=80',
+    'PostgreSQL 고급 쿼리 최적화':
+      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=420&q=80',
+    'Jenkins CI/CD 자동화':
+      'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=420&q=80',
+    'GraphQL API 개발 마스터':
+      'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=420&q=80',
+    'Electron 데스크탑 앱 개발':
+      'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=420&q=80',
+    'Tailwind CSS 반응형 디자인':
+      'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=420&q=80',
+    'Redis 캐싱 전략과 최적화':
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=420&q=80',
+    'SvelteKit 모던 웹 개발':
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=420&q=80',
+    '사이버 보안과 윤리적 해킹':
+      'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=420&q=80',
+    'Firebase 실시간 데이터베이스':
+      'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?w=420&q=80',
+    'Kotlin 안드로이드 개발':
+      'https://images.unsplash.com/photo-1575024357086-c8f0e1a20c3e?w=420&q=80',
+    'Apache Kafka 스트리밍':
+      'https://images.unsplash.com/photo-1509228468518-180dd4864904?w=420&q=80',
+    'Shopify 이커머스 개발':
+      'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=420&q=80',
+    'Terraform 인프라스트럭처 코드화':
+      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=420&q=80',
   };
 
   const generateRandomLevel = () => {
@@ -447,7 +501,7 @@ async function main() {
     level: generateRandomLevel(),
     status: 'PUBLISHED',
     instructorId: userId,
-    thumbnailUrl: generateRandomThumbnailUrl(),
+    thumbnailUrl: thumbnailMap[course.title] ?? null,
     createdAt: now,
     updatedAt: now,
   }));
