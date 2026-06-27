@@ -13,9 +13,32 @@ import { Pencil, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Course } from "@/generated/openapi-client";
+import { useMutation } from "@tanstack/react-query";
+import * as api from "@/lib/api";
+import { toast } from "sonner";
 
 export default function UI({ courses }: { courses: Course[] }) {
   const router = useRouter();
+
+  const deleteCourseMutation = useMutation({
+    mutationFn: async (courseId: string) => {
+      const result = await api.deleteCourse(courseId);
+      if (result.error) throw result.error;
+      return result;
+    },
+    onSuccess: () => {
+      toast.success("강의가 삭제되었습니다.");
+      router.refresh();
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "강의 삭제에 실패했습니다.");
+    },
+  });
+
+  const handleDelete = (courseId: string) => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    deleteCourseMutation.mutate(courseId);
+  };
 
   return (
     <div className="w-full p-6">
@@ -80,11 +103,8 @@ export default function UI({ courses }: { courses: Course[] }) {
                   <TableCell>{status}</TableCell>
                   <TableCell className="flex flex-col gap-2 justify-center h-full">
                     <Button
-                      onClick={() => {
-                        const confirmed =
-                          window.confirm("정말 삭제하시겠습니까?");
-                        console.log(confirmed);
-                      }}
+                      onClick={() => handleDelete(course.id)}
+                      disabled={deleteCourseMutation.isPending}
                       variant="destructive"
                       size="sm"
                     >

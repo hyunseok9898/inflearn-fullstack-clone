@@ -11,6 +11,7 @@ import {
   commentsControllerUpdate,
   coursesControllerAddFavorite,
   coursesControllerCreate,
+  coursesControllerDelete,
   coursesControllerCreateInstructorReply,
   coursesControllerCreateReview,
   coursesControllerDeleteReview,
@@ -97,6 +98,14 @@ export const getCourseById = async (id: string) => {
     data,
     error,
   };
+};
+
+export const deleteCourse = async (id: string) => {
+  const { data, error } = await coursesControllerDelete({
+    path: { id },
+  });
+
+  return { data, error };
 };
 
 export const createCourse = async (title: string) => {

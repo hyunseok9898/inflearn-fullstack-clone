@@ -5,12 +5,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  /* config options here */
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "300mb",
-    },
+  serverActions: {
+    bodySizeLimit: "300mb",
   },
+  experimental: {},
   images: {
     remotePatterns: [
       {
