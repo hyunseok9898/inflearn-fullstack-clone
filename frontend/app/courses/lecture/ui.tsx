@@ -369,6 +369,11 @@ function VideoPlayer({
     mutationFn: (updateLectureActivityDto: UpdateLectureActivityDto) =>
       api.updateLectureActivity(lecture.id, updateLectureActivityDto),
   });
+  const updateLectureDurationMutation = useMutation({
+    mutationFn: (duration: number) =>
+      api.updateLecture(lecture.id, { duration }),
+    onSuccess: () => router.refresh(),
+  });
 
   const videoUrl = (lecture.videoStorageInfo as any)?.cloudFront?.url as
     | string
@@ -482,6 +487,9 @@ function VideoPlayer({
       if (lectureActivity && !hasSeekOnReadyRef.current) {
         hasSeekOnReadyRef.current = true;
         e.currentTarget.currentTime = lectureActivity.duration;
+      }
+      if (!lecture.duration) {
+        updateLectureDurationMutation.mutate(Math.round(d));
       }
     }
   };

@@ -32,6 +32,7 @@ interface EditLectureForm {
   title: string;
   description: string;
   videoStorageInfo?: any;
+  duration?: number;
 }
 
 const MAX_FILE_SIZE = 300 * 1024 * 1024; // 300MB
@@ -59,15 +60,34 @@ export function EditLectureDialog({
     videoStorageInfo: lecture.videoStorageInfo,
   });
 
+  const getVideoDuration = (file: File): Promise<number> =>
+    new Promise((resolve) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      const url = URL.createObjectURL(file);
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(url);
+        resolve(Math.round(video.duration));
+      };
+      video.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(0);
+      };
+      video.src = url;
+    });
+
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
-      const { data, error } = await api.uploadMedia(file);
+      const [{ data, error }, duration] = await Promise.all([
+        api.uploadMedia(file),
+        getVideoDuration(file),
+      ]);
       if (!data || error) {
         toast.error(error as string);
         return;
       }
-      setForm((prev) => ({ ...prev, videoStorageInfo: data }));
+      setForm((prev) => ({ ...prev, videoStorageInfo: data, duration }));
     }
   }, []);
 
@@ -81,7 +101,10 @@ export function EditLectureDialog({
   const editLectureMutation = useMutation({
     mutationFn: async (data: EditLectureForm) => {
       return api.updateLecture(lecture.id, {
-        ...form,
+        title: data.title,
+        description: data.description,
+        videoStorageInfo: data.videoStorageInfo,
+        duration: data.duration,
       });
     },
     onSuccess: () => {
