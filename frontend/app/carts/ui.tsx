@@ -63,15 +63,42 @@ export default function CartUI() {
     mutationFn: async (courseId: string) => {
       const result = await api.removeFromCart(courseId);
       if (result.error) throw result.error;
+      await api.removeFavorite(courseId).catch(() => {});
       return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cart-items"] });
+      queryClient.invalidateQueries({ queryKey: ["myFavorites"] });
     },
     onError: (error: any) => {
       toast.error(error?.message || "삭제에 실패했습니다.");
     },
   });
+
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteSelected = async () => {
+    if (selectedItems.length === 0) return;
+    setIsDeleting(true);
+    try {
+      await Promise.all(
+        selectedItems.map((courseId) =>
+          Promise.all([
+            api.removeFromCart(courseId),
+            api.removeFavorite(courseId).catch(() => {}),
+          ]),
+        ),
+      );
+      queryClient.invalidateQueries({ queryKey: ["cart-items"] });
+      queryClient.invalidateQueries({ queryKey: ["myFavorites"] });
+      setSelectedItems([]);
+      toast.success("선택한 강의를 삭제했습니다.");
+    } catch {
+      toast.error("삭제에 실패했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const selectedCartItems =
     cartItemsQuery?.data?.items?.filter((item) =>
@@ -204,27 +231,33 @@ export default function CartUI() {
         {/* 좌측: 장바구니 아이템들 */}
         <div className="space-y-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">
-              <Button
-                onClick={handleSelectAll}
-                className="flex items-center gap-2"
-              >
-                <input
-                  type="checkbox"
-                  checked={
-                    selectedItems.length ===
-                      cartItemsQuery?.data?.items?.length &&
-                    selectedItems.length > 0
-                  }
-                  readOnly
-                  className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
-                />
-              </Button>
+            <div
+              className="flex items-center gap-2 cursor-pointer select-none text-lg font-semibold"
+              onClick={handleSelectAll}
+            >
+              <input
+                type="checkbox"
+                checked={
+                  selectedItems.length ===
+                    cartItemsQuery?.data?.items?.length &&
+                  selectedItems.length > 0
+                }
+                readOnly
+                className="w-4 h-4 text-green-600 rounded"
+              />
               전체선택{" "}
               <span className="text-green-600">
                 {selectedItems.length}/{cartItemsQuery?.data?.totalCount}
               </span>
-            </h2>
+            </div>
+            <button
+              onClick={handleDeleteSelected}
+              disabled={isDeleting || selectedItems.length === 0}
+              className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-500 transition-colors disabled:opacity-40"
+            >
+              <Trash2Icon className="w-4 h-4" />
+              선택삭제
+            </button>
           </div>
 
           {cartItemsQuery?.data?.items.map((item) => (
